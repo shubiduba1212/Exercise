@@ -1,0 +1,123 @@
+jQuery.datetimepicker.setLocale('ko');
+
+      // 1. 기간설정 활성화시, 오늘 날짜 및 현재 시간 + 1 부터 선택 가능
+      // 2. 오늘 포함 이후 날짜 선택 가능(이전 날짜 선택 불가)
+      // 3. 시작날짜 선택 후 종료날짜 선택
+
+      console.log(new Date().getHours() + 1);
+
+      //시작일자
+      $(".start_time input").datetimepicker({ 
+        format: "Y-m-d H:00",
+        defaultTime: (new Date().getHours() + 1)+":00",
+        minDate: 0, //오늘 이전 일자 선택 불가
+        minTime: new Date(), formatTime:'H:00', //최소 선택 가능 가능 시간 = 현재 시간(Hour) + 1
+        onClose:function(ct){//달력에서 일자 선택 후, 달력 닫는 이벤트시,
+          let endDateInput = $(".end_time input");
+          console.log(ct) //Tue May 16 2023 02:00:44 GMT+0900 (한국 표준시)                   
+          if($(".end_time input").val() != ''){//종료일자를 선택한 상태인 경우
+              let tempStartDate = new Date(ct);
+              let tempEndDate = new Date(endDateInput.val());
+              if(tempStartDate > tempEndDate){
+                console.log('시작일자를 종료일자보다 이후 일자/시간으로 선택할 수 없습니다.');
+                $(".start_time input").val(''); // 시작일자 빈칸으로 변경
+                $(".end_time input").val(''); // 종료일자 빈칸으로 변경
+              }
+          }else {//종료일자를 선택하지 않은 상태인 경우            
+          }
+        }, onSelectDate: function(ct, $i){
+          let time = new Date(ct).getHours() + 1;
+          let tempStartDate = new Date(ct);
+          if((tempStartDate.getDate() > new Date().getDate()) || (tempStartDate.getMonth() > new Date().getMonth())){//오늘 이후 일자를 선택한 경우
+            console.log('오늘 이후 일자 선택');
+            $(".start_time input").datetimepicker('setOptions', { minTime: '00:00', formatTime:'H:00'});
+          }else if(tempStartDate < new Date()){ //오늘 이전 일자를 선택한 경우
+            console.log('시작일자를 다시 설정해주세요.');
+            $(".start_time input").val(''); // 시작일자 빈칸으로 변경
+          }else if((tempStartDate.getDate() == new Date().getDate()) && (tempStartDate.getMonth() == new Date().getMonth()) && (tempStartDate.getFullYear() == new Date().getFullYear())){//오늘 일자를 선택한 경우
+            console.log('같은 일자 선택');
+            $(".start_time input").datetimepicker('setOptions', { minTime: ct, formatTime:'H:00'});
+          }
+          $(".end_time input").datetimepicker('setOptions', { minDate: ct });
+          $(".end_time input").datetimepicker('setOptions', { minTime: time, formatTime:'H:00'});
+        }, onSelectTime: function(ct, $i){
+          let time = new Date(ct).getHours() + 1;
+          let tempStartDate = new Date(ct);
+          console.log(time);
+          if(tempStartDate.getHours() == 23){ //선택한 시간이 23시일 경우
+            $(".end_time input").datetimepicker('setOptions', { minDate: ct + 1 });//D+1
+            $(".end_time input").datetimepicker('setOptions', { minTime: '00:00', formatTime:'H:00'});
+          }else{
+
+          }
+        }      
+      })
+
+      //종료일자
+      $(".end_time input").datetimepicker({ 
+        format: "Y-m-d H:00",
+        // format: "Y-m-d "+(new Date().getHours() + 2)+":00",
+        defaultTime: (new Date().getHours() + 2)+":00",
+        // minDate: 0, //오늘 이전 일자 선택 불가
+        // minTime: new Date($(".start_time input").val()).getHours() + 2, formatTime:'H:00', //최소 선택 가능 가능 시간 = 현재 시간(Hour) + 1
+        // startTime: new Date($(".start_time input").val()).getHours() + 1,
+        onClose:function(ct, $i){//달력에서 일자 선택 후, 달력 닫는 이벤트시,
+          let startDateInput = $(".start_time input");          
+          if($(".start_time input").val() != ''){//시작일자를 선택한 상태인 경우
+            let tempStartDate = new Date(startDateInput.val());
+            let tempEndDate = new Date(ct);
+            if(tempStartDate > tempEndDate){
+              console.log('시작일자보다 이전 일자/시간은 선택할 수 없습니다.');
+              $(".end_time input").val(''); // 종료일자 빈칸으로 변경
+              // startDateInput.val(getFormatDateTime(ct));
+            }
+          }else {//시작일자를 선택하지 않은 상태인 경우            
+             // 종료일자 빈칸으로 변경
+              // endDateInput.val(getFormatDateTime(ct));
+              // console.log(startDateInput.val(getFormatDateTime(ct)));
+          }
+        }, onSelectDate: function(ct, $i){ //일자 선택시
+          let start_date = $(".start_time input").val(); //시작일자 input value
+          let time = new Date(start_date).getHours() + 1;//시작일자 시간 + 1
+          let tempStartDate = new Date(start_date); //시작일자
+          console.log(time);
+          if(tempStartDate > new Date(ct)){//시작일자 이전 일자를 선택한 경우            
+            console.log('시작일자보다 이전 일자/시간은 선택할 수 없습니다.');
+            $(".end_time input").val('');
+          }else if(tempStartDate < new Date(ct)){ //오늘 이후 일자를 선택한 경우            
+            $(".end_time input").datetimepicker('setOptions', { minTime: '00:00', formatTime:'H:00'}); //시작일자 이후 일자는 00:00부터 시간 선택 가능
+          }else if((tempStartDate.getDate() == new Date(ct).getDate()) && (tempStartDate.getMonth() == new Date(ct).getMonth())){//시작일자와 동일 일자를 선택한 경우
+            console.log(time);
+            if(time == 24){// 최소 선택가능한 시간이 자정 시간을 선택한 경우
+              $(".end_time input").datetimepicker('setOptions', { minDate: ct + 1 });
+              $(".end_time input").datetimepicker('setOptions', { minTime: '00:00', formatTime:'H:00'});
+            }else{
+              $(".end_time input").datetimepicker('setOptions', { minTime: ct, formatTime:'H:00'});
+            }
+            $(".end_time input").datetimepicker('setOptions', { minTime: ct, formatTime:'H:00'});
+          }
+          $(".end_time input").datetimepicker('setOptions', { minDate: ct });
+          $(".end_time input").datetimepicker('setOptions', { minTime: time, formatTime:'H:00'});
+        }, onSelectTime: function(ct, $i){//시간 선택시
+          // let time = new Date(ct).getHours() + 1;
+          // let tempStartDate = new Date(ct);
+          // if(tempStartDate != new Date()){//오늘이 아닌 다른 일자를 선택한 경우
+          //   $(".start_time input").datetimepicker('setOptions', { minTime: '00:00'});
+          // }else{//오늘 일자를 선택한 경우
+            
+          // }
+          // console.log(time);
+          // $(".end_time input").datetimepicker('setOptions', { minDate: ct });
+          // $(".end_time input").datetimepicker('setOptions', { minTime: time, formatTime:'H:00'});
+        }    
+      })
+
+      // $i.datetimepicker('destroy');
+//       {allowTimes:[
+//   '09:00',
+//   '11:00',
+//   '12:00',
+//   '21:00'
+// ]}
+
+    });
